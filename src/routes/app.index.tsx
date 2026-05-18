@@ -134,6 +134,18 @@ function Dashboard() {
             </>
           )}
         </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="hidden md:flex gap-2 rounded-xl border-border/50 hover:bg-destructive hover:text-destructive-foreground"
+            onClick={async () => {
+              await signOut();
+              nav({ to: "/" });
+            }}
+          >
+            <LogOut className="h-4 w-4" /> Sign Out
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -147,64 +159,124 @@ function Dashboard() {
         </div>
       ) : (
         <>
-          {role === "admin" && (
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-              <StatCard label="Total Users" value={stats.users} accent />
-              <StatCard label="Customers" value={stats.customers} />
-              <StatCard label="Boutique Owners" value={stats.owners} />
-              <StatCard label="Referrals" value={stats.referrals} />
-              <StatCard label="Active" value={stats.active} />
-              <StatCard label="Pending" value={stats.pending} />
-            </div>
-          )}
-
-          {role === "boutique_owner" && (
-            <div className="grid gap-4 md:grid-cols-4">
-              <StatCard label="Total Customers" value={stats.customers} accent />
-              <StatCard label="Active" value={stats.active} />
-              <StatCard label="New (30d)" value={stats.customers} />
-              <StatCard label="Network Activity" value={stats.referrals} />
-            </div>
-          )}
-
-          {role === "customer" && (
-            <>
-              <div className="grid gap-4 md:grid-cols-4">
-                <StatCard label="Direct Referrals" value={stats.direct} accent />
-                <StatCard label="Network Size" value={stats.network} />
-                <StatCard label="Sponsor" value={parent ?? "—"} />
-                <StatCard label="Status" value={profile!.status} />
-              </div>
-              <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">Your referral code</div>
-                    <div className="mt-1 font-mono text-2xl font-bold text-gradient-primary">{profile!.referral_code}</div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Profile Details</h3>
+              <div className="mt-4 space-y-3">
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <span className="text-sm text-muted-foreground">Full Name</span>
+                  <span className="text-sm font-semibold">{profile?.full_name}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <span className="text-sm text-muted-foreground">Email</span>
+                  <span className="text-sm font-semibold truncate max-w-[180px]">{profile?.email}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                  <span className="text-sm text-muted-foreground">Mobile</span>
+                  <span className="text-sm font-semibold">{profile?.mobile ?? "—"}</span>
+                </div>
+                {profile?.boutique_name && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                    <span className="text-sm text-muted-foreground">Boutique</span>
+                    <span className="text-sm font-semibold">{profile.boutique_name}</span>
                   </div>
-                  <div className="flex gap-2">
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
+                    profile?.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : 
+                    profile?.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : 
+                    'bg-rose-500/10 text-rose-500'
+                  }`}>
+                    {profile?.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {role === "customer" && (
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-soft md:col-span-1 lg:col-span-2">
+                <div className="flex flex-col h-full justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Referral Program</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">Share your code to grow your network and earn rewards.</p>
+                    <div className="mt-6">
+                      <div className="text-sm font-medium text-muted-foreground">Your unique referral code</div>
+                      <div className="mt-1 font-mono text-3xl font-extrabold text-gradient-primary tracking-tighter">{profile?.referral_code}</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-3">
                     <Button
                       variant="outline"
+                      className="flex-1 min-w-[140px] rounded-xl"
                       onClick={() => {
-                        navigator.clipboard.writeText(profile!.referral_code!);
-                        toast.success("Code copied");
+                        const code = profile?.referral_code;
+                        if (!code) return;
+                        if (navigator.clipboard && window.isSecureContext) {
+                          navigator.clipboard.writeText(code)
+                            .then(() => toast.success("Code copied"))
+                            .catch(() => {
+                              const el = document.createElement('textarea');
+                              el.value = code;
+                              document.body.appendChild(el);
+                              el.select();
+                              document.execCommand('copy');
+                              document.body.removeChild(el);
+                              toast.success("Code copied");
+                            });
+                        } else {
+                          const el = document.createElement('textarea');
+                          el.value = code;
+                          document.body.appendChild(el);
+                          el.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(el);
+                          toast.success("Code copied");
+                        }
                       }}
                     >
-                      <Copy className="mr-2 h-4 w-4" /> Copy code
+                      <Copy className="mr-2 h-4 w-4" /> Copy Code
                     </Button>
                     <Button
-                      className="bg-gradient-primary text-primary-foreground shadow-soft"
+                      className="flex-1 min-w-[140px] bg-gradient-primary text-primary-foreground shadow-soft rounded-xl"
                       onClick={handleShare}
                     >
-                      <Share2 className="mr-2 h-4 w-4" /> Share link
+                      <Share2 className="mr-2 h-4 w-4" /> Share Link
                     </Button>
                   </div>
                 </div>
-                {referralLink && (
-                  <div className="mt-4 truncate rounded-lg bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">{referralLink}</div>
-                )}
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+            {role === "admin" && (
+              <>
+                <StatCard label="Total Users" value={stats.users} accent />
+                <StatCard label="Customers" value={stats.customers} />
+                <StatCard label="Boutique Owners" value={stats.owners} />
+                <StatCard label="Pending" value={stats.pending} />
+              </>
+            )}
+
+            {role === "boutique_owner" && (
+              <>
+                <StatCard label="Total Customers" value={stats.customers} accent />
+                <StatCard label="Active" value={stats.active} />
+                <StatCard label="New (30d)" value={stats.customers} />
+                <StatCard label="Network Size" value={stats.referrals} />
+              </>
+            )}
+
+            {role === "customer" && (
+              <>
+                <StatCard label="Direct Referrals" value={stats.direct} accent />
+                <StatCard label="Total Network" value={stats.network} />
+                <StatCard label="Sponsor" value={parent ?? "—"} />
+                <StatCard label="Active Status" value={profile!.status} />
+              </>
+            )}
+          </div>
         </>
       )}
 
