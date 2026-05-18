@@ -20,7 +20,6 @@ function SettingsPage() {
         <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-soft">
           <h2 className="text-xl font-semibold">Profile Information</h2>
           <div className="space-y-2"><Label>Full name</Label><Input value={profile?.full_name ?? ""} disabled /></div>
-          <div className="space-y-2"><Label>Email</Label><Input value={profile?.email ?? ""} disabled /></div>
           <div className="space-y-2"><Label>Mobile</Label><Input value={profile?.mobile ?? ""} disabled /></div>
           <div className="space-y-2"><Label>Account type</Label><Input value={profile?.user_type.replace("_", " ") ?? ""} disabled className="capitalize" /></div>
           {profile?.referral_code && (
@@ -48,7 +47,7 @@ function SettingsPage() {
             <h3 className="font-bold text-sm text-emerald-800">Referral Privacy</h3>
             <p className="mt-1 text-xs text-emerald-700 leading-relaxed">
               Sharing your link only shares your public referral code. No other private 
-              information (password, email, or token) is ever exposed.
+              information (password, mobile, or token) is ever exposed.
             </p>
           </div>
         </div>

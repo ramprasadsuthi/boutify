@@ -12,6 +12,8 @@ function CustomerNode({ data }: { data: { name: string; code: string | null; ref
   const statusColor =
     data.status === "active" ? "bg-emerald-500" : data.status === "pending" ? "bg-amber-500" : "bg-rose-500";
 
+  const showFullDetails = data.depth < 2;
+
   return (
     <div className={`min-w-[220px] rounded-2xl border ${data.root ? "border-transparent bg-gradient-primary text-primary-foreground shadow-elegant" : "border-border bg-card shadow-soft"} p-5 relative transition-transform hover:scale-[1.02] cursor-pointer`}>
       <div className="flex items-center gap-3">
@@ -25,21 +27,25 @@ function CustomerNode({ data }: { data: { name: string; code: string | null; ref
           </div>
         </div>
       </div>
-      {data.mobile && (
+      {showFullDetails && data.mobile && (
         <div className={`mt-3 text-sm font-semibold ${data.root ? "opacity-90" : "text-foreground"}`}>
           {data.mobile}
         </div>
       )}
-      <div className={`mt-4 flex items-center justify-between text-xs ${data.root ? "opacity-90" : "text-muted-foreground"}`}>
-        <span className="inline-flex items-center gap-1.5 font-medium">
-          <span className={`h-2.5 w-2.5 rounded-full ${statusColor}`} />
-          {data.status}
-        </span>
-        <span className="font-medium">{data.refs} direct referrals</span>
-      </div>
-      <div className={`mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest font-semibold ${data.root ? "opacity-75" : "text-muted-foreground"}`}>
-        <span>Member since {new Date(data.date).toLocaleDateString()}</span>
-      </div>
+      {showFullDetails && (
+        <div className={`mt-4 flex items-center justify-between text-xs ${data.root ? "opacity-90" : "text-muted-foreground"}`}>
+          <span className="inline-flex items-center gap-1.5 font-medium">
+            <span className={`h-2.5 w-2.5 rounded-full ${statusColor}`} />
+            {data.status}
+          </span>
+          <span className="font-medium">{data.refs} direct referrals</span>
+        </div>
+      )}
+      {showFullDetails && (
+        <div className={`mt-2 flex items-center justify-between text-[10px] uppercase tracking-widest font-semibold ${data.root ? "opacity-75" : "text-muted-foreground"}`}>
+          <span>Member since {new Date(data.date).toLocaleDateString()}</span>
+        </div>
+      )}
       
       {data.hasHiddenChildren && (
         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-3 py-1 rounded-full shadow-md font-bold border-2 border-background whitespace-nowrap">

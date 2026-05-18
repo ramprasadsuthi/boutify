@@ -168,10 +168,6 @@ function Dashboard() {
                   <span className="text-sm font-semibold">{profile?.full_name}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                  <span className="text-sm text-muted-foreground">Email</span>
-                  <span className="text-sm font-semibold truncate max-w-[180px]">{profile?.email}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-border/50 pb-2">
                   <span className="text-sm text-muted-foreground">Mobile</span>
                   <span className="text-sm font-semibold">{profile?.mobile ?? "—"}</span>
                 </div>

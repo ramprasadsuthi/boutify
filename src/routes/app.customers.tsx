@@ -39,7 +39,6 @@ function CustomersPage() {
           <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Mobile</th>
               <th className="px-4 py-3">Status</th>
             </tr>
@@ -48,7 +47,6 @@ function CustomersPage() {
             {customers.map((c) => (
               <tr key={c.id} className="hover:bg-muted/30 transition-colors">
                 <td className="px-4 py-3 font-medium">{c.full_name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{c.email}</td>
                 <td className="px-4 py-3 text-muted-foreground">{c.mobile ?? "—"}</td>
                 <td className="px-4 py-3 capitalize">
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -62,7 +60,7 @@ function CustomersPage() {
               </tr>
             ))}
             {!customers.length && !loading && (
-              <tr><td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">No customers found.</td></tr>
+              <tr><td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">No customers found.</td></tr>
             )}
           </tbody>
         </table>
