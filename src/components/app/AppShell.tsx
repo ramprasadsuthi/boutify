@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { Network, LayoutDashboard, GitBranch, Users, Settings, LogOut, Store } from "lucide-react";
+import { Network, LayoutDashboard, GitBranch, Users, Settings, LogOut, Store, Activity, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
     if (role === "admin") {
       items.push({ to: "/users", label: "Users", icon: Users });
+      items.push({ to: "/credits", label: "Credit Mgmt", icon: Coins });
+      items.push({ to: "/transactions", label: "Transactions", icon: Activity });
       items.push({ to: "/app/network", label: "Genealogy", icon: GitBranch });
     }
     if (role === "boutique_owner") {

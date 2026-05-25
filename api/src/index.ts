@@ -33,24 +33,22 @@ app.get('/', (c) => c.text('Genealogy API is running'));
 
 // Register
 app.post('/api/auth/register', async (c) => {
-  const { fullName, email, password, mobile, userType, referralCodeInput, boutiqueName } = await c.req.json();
+  const body = await c.req.json();
+  const { fullName, email, password, mobile, userType, referralCodeInput, boutiqueName, city, area, boutiqueDescription } = body;
   const db = await getDB(c.env);
 
   try {
-    // Check if email exists
-    const [existing]: any = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
+    const [existing]: any = await db.execute('SELECT id FROM users WHERE mobile = ? OR email = ?', [mobile, email || '']);
     if (existing.length > 0) {
-      return c.json({ error: 'Email already registered' }, 400);
+      return c.json({ error: 'Mobile or Email already registered' }, 400);
     }
 
     const id = crypto.randomUUID();
     const passwordHash = await bcrypt.hash(password, 10);
     const referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    // Status: active for admin, pending for others
     const status = userType === 'admin' ? 'active' : 'pending';
 
-    // Handle referral
     let referredBy = null;
     if (userType === 'customer' && referralCodeInput) {
       const [referrer]: any = await db.execute('SELECT id FROM users WHERE referral_code = ?', [referralCodeInput.toUpperCase()]);
@@ -60,8 +58,9 @@ app.post('/api/auth/register', async (c) => {
     }
 
     await db.execute(
-      'INSERT INTO users (id, full_name, email, password_hash, mobile, user_type, status, referral_code, referred_by, boutique_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, fullName, email, passwordHash, mobile, userType, status, referralCode, referredBy, boutiqueName]
+      `INSERT INTO users (id, full_name, email, password_hash, mobile, user_type, status, referral_code, referred_by, boutique_name, city, area, boutique_description) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, fullName, email || null, passwordHash, mobile, userType, status, referralCode, referredBy, boutiqueName || null, city || null, area || null, boutiqueDescription || null]
     );
 
     return c.json({ message: 'User registered successfully' });
@@ -77,12 +76,8 @@ app.post('/api/auth/login', async (c) => {
   const { mobile, password } = await c.req.json();
   const db = await getDB(c.env);
   
-  // Login by mobile (as per current app) or email
-  // App seems to use email generated from mobile: mobile@boutify.app
-  const email = `${mobile.replace(/\D/g, '')}@boutify.app`;
-
   try {
-    const [rows]: any = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+    const [rows]: any = await db.execute('SELECT * FROM users WHERE mobile = ?', [mobile]);
     if (rows.length === 0) {
       return c.json({ error: 'Invalid credentials' }, 401);
     }
@@ -93,12 +88,8 @@ app.post('/api/auth/login', async (c) => {
       return c.json({ error: 'Invalid credentials' }, 401);
     }
 
-    const payload = {
-      sub: user.id,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24h
-    };
+    const payload = { sub: user.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 };
     
-    // We use @ts-ignore because Hono's jwt signature might be picky with types
     // @ts-ignore
     const token = await jwt.sign(payload, c.env.JWT_SECRET);
 
@@ -113,6 +104,10 @@ app.post('/api/auth/login', async (c) => {
         status: user.status,
         referral_code: user.referral_code,
         boutique_name: user.boutique_name,
+        wallet_balance: user.wallet_balance,
+        city: user.city,
+        area: user.area,
+        boutique_description: user.boutique_description,
         created_at: user.created_at
       }
     });
@@ -149,6 +144,10 @@ app.get('/api/auth/me', async (c) => {
       status: user.status,
       referral_code: user.referral_code,
       boutique_name: user.boutique_name,
+      wallet_balance: user.wallet_balance,
+      city: user.city,
+      area: user.area,
+      boutique_description: user.boutique_description,
       created_at: user.created_at
     });
   } catch (err) {
@@ -168,8 +167,7 @@ app.patch('/api/auth/profile', async (c) => {
     
     const db = await getDB(c.env);
     
-    // We only allow updating certain fields
-    const allowedFields = ['full_name', 'boutique_name', 'mobile'];
+    const allowedFields = ['full_name', 'boutique_name', 'mobile', 'city', 'area', 'boutique_description'];
     const updates = Object.keys(body)
       .filter(key => allowedFields.includes(key))
       .map(key => `${key} = ?`)
@@ -192,13 +190,136 @@ app.patch('/api/auth/profile', async (c) => {
   }
 });
 
-// --- Admin ---
+// --- Customer Network (3 levels) ---
+app.get('/api/network', async (c) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader) return c.json({ error: 'Unauthorized' }, 401);
+  const token = authHeader.replace('Bearer ', '');
 
-// List Users
-app.get('/api/users', async (c) => {
+  try {
+    const payload = await jwt.verify(token, c.env.JWT_SECRET);
+    const userId = payload.sub;
+
+    const db = await getDB(c.env);
+    const [users]: any = await db.execute('SELECT id, full_name, mobile, referred_by FROM users WHERE user_type = "customer"');
+    await db.end();
+
+    const map = new Map<string, any[]>();
+    users.forEach((u: any) => {
+      if (u.referred_by) {
+        if (!map.has(u.referred_by)) map.set(u.referred_by, []);
+        map.get(u.referred_by)!.push({
+          id: u.id,
+          name: u.full_name,
+          mobile: u.mobile
+        });
+      }
+    });
+
+    const network: any[] = [];
+    const queue = [{ id: userId, level: 1 }];
+    const visited = new Set<string>();
+
+    while (queue.length > 0) {
+      const curr = queue.shift()!;
+      if (curr.level > 3) continue;
+
+      const children = map.get(curr.id as string) || [];
+      for (const child of children) {
+        if (!visited.has(child.id)) {
+          visited.add(child.id);
+          network.push({ ...child, level: curr.level });
+          if (curr.level < 3) {
+            queue.push({ id: child.id, level: curr.level + 1 });
+          }
+        }
+      }
+    }
+
+    return c.json({ network });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+// --- Admin Credit Distribution ---
+app.post('/api/admin/credit', async (c) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader) return c.json({ error: 'Unauthorized' }, 401);
+  const token = authHeader.replace('Bearer ', '');
+
+  try {
+    const payload = await jwt.verify(token, c.env.JWT_SECRET);
+    const adminId = payload.sub;
+
+    const db = await getDB(c.env);
+    
+    // Verify admin
+    const [admins]: any = await db.execute('SELECT user_type FROM users WHERE id = ?', [adminId]);
+    if (!admins.length || admins[0].user_type !== 'admin') {
+      const foundType = admins.length ? admins[0].user_type : 'NOT_FOUND';
+      return c.json({ error: `Forbidden: User ${adminId} is not an admin (Type: ${foundType})` }, 403);
+    }
+
+    const { customerId, amount } = await c.req.json();
+    const creditAmount = parseFloat(amount);
+    
+    if (isNaN(creditAmount) || creditAmount <= 0) {
+      return c.json({ error: 'Invalid amount' }, 400);
+    }
+
+    // Find up to 3 ancestors
+    let currentId = customerId;
+    let parents = [];
+    for (let i = 0; i < 3; i++) {
+      const [rows]: any = await db.execute('SELECT referred_by FROM users WHERE id = ?', [currentId]);
+      if (rows.length && rows[0].referred_by) {
+        parents.push(rows[0].referred_by);
+        currentId = rows[0].referred_by;
+      } else {
+        break;
+      }
+    }
+
+    let distributions = [];
+    if (parents.length === 3) {
+       distributions.push({ id: parents[0], amount: parseFloat((creditAmount * 0.6).toFixed(2)), level: 1 });
+       distributions.push({ id: parents[1], amount: parseFloat((creditAmount * 0.2).toFixed(2)), level: 2 });
+       distributions.push({ id: parents[2], amount: parseFloat((creditAmount * 0.2).toFixed(2)), level: 3 });
+    } else if (parents.length === 2) {
+       distributions.push({ id: parents[0], amount: parseFloat((creditAmount * 0.8).toFixed(2)), level: 1 });
+       distributions.push({ id: parents[1], amount: parseFloat((creditAmount * 0.2).toFixed(2)), level: 2 });
+    } else if (parents.length === 1) {
+       distributions.push({ id: parents[0], amount: parseFloat(creditAmount.toFixed(2)), level: 1 });
+    }
+
+    for (const dist of distributions) {
+      if (dist.amount > 0) {
+        await db.execute('UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?', [dist.amount, dist.id]);
+        await db.execute('INSERT INTO transactions (user_id, amount, transaction_type, description) VALUES (?, ?, ?, ?)', [dist.id, dist.amount, 'credit', `Network credit from Level ${dist.level} descendant`]);
+      }
+    }
+
+    // Track admin credit action
+    await db.execute('INSERT INTO transactions (user_id, amount, transaction_type, description) VALUES (?, ?, ?, ?)', [customerId, creditAmount, 'credit', `Admin initiated automatic network distribution of ₹${creditAmount}`]);
+
+    await db.end();
+    return c.json({ message: 'Credit distributed successfully', distributions });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+// Admin Get Wallet History
+app.get('/api/admin/transactions', async (c) => {
   const db = await getDB(c.env);
   try {
-    const [rows]: any = await db.execute('SELECT id, full_name, email, mobile, user_type, status, referral_code, created_at FROM users ORDER BY created_at DESC');
+    const [rows]: any = await db.execute(`
+      SELECT t.*, u.full_name, u.mobile 
+      FROM transactions t 
+      JOIN users u ON t.user_id = u.id 
+      ORDER BY t.created_at DESC
+    `);
     return c.json(rows);
   } catch (err: any) {
     return c.json({ error: err.message }, 500);
@@ -207,7 +328,73 @@ app.get('/api/users', async (c) => {
   }
 });
 
-// Update Status
+// --- Boutiques ---
+app.get('/api/boutiques', async (c) => {
+  const db = await getDB(c.env);
+  try {
+    const [rows]: any = await db.execute(`
+      SELECT id, full_name, mobile, boutique_name, city, area, boutique_description 
+      FROM users WHERE user_type = "boutique_owner" AND status = "active"
+    `);
+    return c.json(rows);
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  } finally {
+    await db.end();
+  }
+});
+
+app.post('/api/boutique/services', async (c) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader) return c.json({ error: 'Unauthorized' }, 401);
+  const token = authHeader.replace('Bearer ', '');
+
+  try {
+    const payload = await jwt.verify(token, c.env.JWT_SECRET);
+    const boutiqueId = payload.sub;
+
+    const { serviceName, charge } = await c.req.json();
+    const db = await getDB(c.env);
+
+    await db.execute(
+      'INSERT INTO boutique_services (boutique_id, service_name, charge) VALUES (?, ?, ?)',
+      [boutiqueId, serviceName, charge]
+    );
+    await db.end();
+
+    return c.json({ message: 'Service added successfully' });
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+app.get('/api/boutique/services/:boutiqueId', async (c) => {
+  const boutiqueId = c.req.param('boutiqueId');
+  const db = await getDB(c.env);
+  try {
+    const [rows]: any = await db.execute('SELECT * FROM boutique_services WHERE boutique_id = ?', [boutiqueId]);
+    return c.json(rows);
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  } finally {
+    await db.end();
+  }
+});
+
+
+// --- Admin List Users ---
+app.get('/api/users', async (c) => {
+  const db = await getDB(c.env);
+  try {
+    const [rows]: any = await db.execute('SELECT id, full_name, email, mobile, user_type, status, referral_code, referred_by, wallet_balance, created_at FROM users ORDER BY created_at DESC');
+    return c.json(rows);
+  } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  } finally {
+    await db.end();
+  }
+});
+
 app.patch('/api/users/:id/status', async (c) => {
   const id = c.req.param('id');
   const { status } = await c.req.json();
@@ -222,7 +409,6 @@ app.patch('/api/users/:id/status', async (c) => {
   }
 });
 
-// Delete User
 app.delete('/api/users/:id', async (c) => {
   const id = c.req.param('id');
   const db = await getDB(c.env);
@@ -236,7 +422,6 @@ app.delete('/api/users/:id', async (c) => {
   }
 });
 
-// --- Dashboard Stats ---
 app.get('/api/dashboard/stats', async (c) => {
   const userId = c.req.query('userId');
   const role = c.req.query('role');

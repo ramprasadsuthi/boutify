@@ -177,6 +177,12 @@ function Dashboard() {
                     <span className="text-sm font-semibold">{profile.boutique_name}</span>
                   </div>
                 )}
+                {role === "customer" && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                    <span className="text-sm text-muted-foreground">Wallet Balance</span>
+                    <span className="text-sm font-semibold text-emerald-600">₹{profile.wallet_balance || "0.00"}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Status</span>
                   <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${

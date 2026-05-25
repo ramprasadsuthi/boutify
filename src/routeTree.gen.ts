@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CreditsRouteImport } from './routes/credits'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -25,6 +27,11 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -33,6 +40,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditsRoute = CreditsRouteImport.update({
+  id: '/credits',
+  path: '/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -74,8 +86,10 @@ const AppBoutiqueRoute = AppBoutiqueRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
@@ -85,8 +99,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
@@ -98,8 +114,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
@@ -112,8 +130,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/credits'
     | '/login'
     | '/register'
+    | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
@@ -123,8 +143,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/credits'
     | '/login'
     | '/register'
+    | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
@@ -135,8 +157,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/credits'
     | '/login'
     | '/register'
+    | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
@@ -148,8 +172,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  CreditsRoute: typeof CreditsRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  TransactionsRoute: typeof TransactionsRoute
   UsersRoute: typeof UsersRoute
 }
 
@@ -160,6 +186,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -174,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credits': {
+      id: '/credits'
+      path: '/credits'
+      fullPath: '/credits'
+      preLoaderRoute: typeof CreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -249,8 +289,10 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  CreditsRoute: CreditsRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  TransactionsRoute: TransactionsRoute,
   UsersRoute: UsersRoute,
 }
 export const routeTree = rootRouteImport

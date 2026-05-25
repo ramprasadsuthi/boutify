@@ -10,6 +10,7 @@ export type Profile = {
   referral_code: string | null;
   referred_by: string | null;
   boutique_name: string | null;
+  wallet_balance?: string | number | null;
   created_at: string;
 };
 
@@ -24,13 +25,13 @@ type Ctx = {
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
-export const API_BASE = "http://localhost:8787";
+export const API_BASE = "http://localhost:3000";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [apiBase, setApiBase] = useState(localStorage.getItem('api_base') || "http://localhost:8787");
+  const [apiBase, setApiBase] = useState(localStorage.getItem('api_base') || "http://localhost:3000");
 
   const switchApi = (url: string) => {
     setApiBase(url);

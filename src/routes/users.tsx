@@ -8,6 +8,15 @@ import { AppShell } from "@/components/app/AppShell";
 import { Trash2, LogOut, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,6 +39,13 @@ function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "customer" | "boutique_owner" | "admin">("all");
+  
+  const [creditOpen, setCreditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [l1Amount, setL1Amount] = useState("");
+  const [l2Amount, setL2Amount] = useState("");
+  const [l3Amount, setL3Amount] = useState("");
+  const [crediting, setCrediting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || profile?.user_type !== "admin")) {
@@ -250,6 +266,7 @@ function UsersPage() {
                 </tbody>
               </table>
             </div>
+            
           </>
         )}
       </div>
