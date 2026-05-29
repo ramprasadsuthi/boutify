@@ -3,12 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Network, Users, Sparkles, Shield, BarChart3, Share2, Check } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Boutify — Build Your Customer Network" },
-      { name: "description", content: "Premium customer referral & genealogy platform with stunning visualizations." },
-    ],
-  }),
   component: Landing,
 });
 

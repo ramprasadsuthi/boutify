@@ -1,0 +1,31 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "hono": "^4.12.18",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.22.3",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^25.7.0",
+    "dotenv": "^17.4.2",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.90.1"
+  }
+}

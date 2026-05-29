@@ -1,0 +1,10 @@
+name = "genealogy-api"
+main = "src/index.ts"
+compatibility_date = "2024-05-14"
+
+[vars]
+DB_HOST = "127.0.0.1"
+DB_USER = "root"
+DB_PASSWORD = "1234"
+DB_NAME = "genealogy_connect"
+JWT_SECRET = "your-very-secret-key"

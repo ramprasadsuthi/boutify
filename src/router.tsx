@@ -1,4 +1,4 @@
-import { createRouter, useRouter } from "@tanstack/react-router";
+import { createRouter, useRouter, createHashHistory } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
@@ -43,7 +43,7 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
             Try again
           </button>
           <a
-            href="/"
+            href="#/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Go home
@@ -54,9 +54,12 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
   );
 }
 
+const hashHistory = createHashHistory();
+
 export const getRouter = () => {
   const router = createRouter({
     routeTree,
+    history: hashHistory,
     context: {},
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,

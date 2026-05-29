@@ -3,20 +3,18 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Network } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Login — Boutify" }] }),
   component: Login,
 });
 
 function Login() {
   const nav = useNavigate();
-  const { user, loading } = useAuth();
-  const [email, setEmail] = useState("");
+  const { user, loading, apiBase, refreshProfile } = useAuth();
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -27,11 +25,25 @@ function Login() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Welcome back!");
-    nav({ to: "/app" });
+    try {
+      const res = await fetch(`${apiBase}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile, password }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
+
+      localStorage.setItem("token", data.token);
+      await refreshProfile();
+      toast.success("Welcome back!");
+      nav({ to: "/app" });
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -48,8 +60,8 @@ function Login() {
           <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Label htmlFor="mobile">Mobile number</Label>
+              <Input id="mobile" type="tel" required placeholder="e.g. 1234567890" value={mobile} onChange={(e) => setMobile(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
