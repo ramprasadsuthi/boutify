@@ -5,12 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [
-    TanStackRouterVite(),
-    react(),
-    tsconfigPaths(),
-    tailwindcss(),
-  ],
+  plugins: [TanStackRouterVite(), react(), tsconfigPaths(), tailwindcss()],
   server: {
     port: 8080,
     host: "0.0.0.0",

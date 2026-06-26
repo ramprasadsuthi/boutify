@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CreditsRouteImport } from './routes/credits'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as BoutiqueIdRouteImport } from './routes/boutique.$id'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppNetworkRouteImport } from './routes/app.network'
 import { Route as AppCustomersRouteImport } from './routes/app.customers'
@@ -30,6 +32,11 @@ const UsersRoute = UsersRouteImport.update({
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -62,6 +69,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const BoutiqueIdRoute = BoutiqueIdRouteImport.update({
+  id: '/boutique/$id',
+  path: '/boutique/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -89,12 +101,14 @@ export interface FileRoutesByFullPath {
   '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/search': typeof SearchRoute
   '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/network': typeof AppNetworkRoute
   '/app/settings': typeof AppSettingsRoute
+  '/boutique/$id': typeof BoutiqueIdRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
@@ -102,12 +116,14 @@ export interface FileRoutesByTo {
   '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/search': typeof SearchRoute
   '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/network': typeof AppNetworkRoute
   '/app/settings': typeof AppSettingsRoute
+  '/boutique/$id': typeof BoutiqueIdRoute
   '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -117,12 +133,14 @@ export interface FileRoutesById {
   '/credits': typeof CreditsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/search': typeof SearchRoute
   '/transactions': typeof TransactionsRoute
   '/users': typeof UsersRoute
   '/app/boutique': typeof AppBoutiqueRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/network': typeof AppNetworkRoute
   '/app/settings': typeof AppSettingsRoute
+  '/boutique/$id': typeof BoutiqueIdRoute
   '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -133,12 +151,14 @@ export interface FileRouteTypes {
     | '/credits'
     | '/login'
     | '/register'
+    | '/search'
     | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
     | '/app/network'
     | '/app/settings'
+    | '/boutique/$id'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -146,12 +166,14 @@ export interface FileRouteTypes {
     | '/credits'
     | '/login'
     | '/register'
+    | '/search'
     | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
     | '/app/network'
     | '/app/settings'
+    | '/boutique/$id'
     | '/app'
   id:
     | '__root__'
@@ -160,12 +182,14 @@ export interface FileRouteTypes {
     | '/credits'
     | '/login'
     | '/register'
+    | '/search'
     | '/transactions'
     | '/users'
     | '/app/boutique'
     | '/app/customers'
     | '/app/network'
     | '/app/settings'
+    | '/boutique/$id'
     | '/app/'
   fileRoutesById: FileRoutesById
 }
@@ -175,8 +199,10 @@ export interface RootRouteChildren {
   CreditsRoute: typeof CreditsRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  SearchRoute: typeof SearchRoute
   TransactionsRoute: typeof TransactionsRoute
   UsersRoute: typeof UsersRoute
+  BoutiqueIdRoute: typeof BoutiqueIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/transactions'
       fullPath: '/transactions'
       preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -236,6 +269,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/boutique/$id': {
+      id: '/boutique/$id'
+      path: '/boutique/$id'
+      fullPath: '/boutique/$id'
+      preLoaderRoute: typeof BoutiqueIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/settings': {
       id: '/app/settings'
@@ -292,8 +332,10 @@ const rootRouteChildren: RootRouteChildren = {
   CreditsRoute: CreditsRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  SearchRoute: SearchRoute,
   TransactionsRoute: TransactionsRoute,
   UsersRoute: UsersRoute,
+  BoutiqueIdRoute: BoutiqueIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

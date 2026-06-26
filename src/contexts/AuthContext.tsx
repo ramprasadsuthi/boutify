@@ -4,6 +4,7 @@ export type Profile = {
   id: string;
   full_name: string;
   email: string;
+  userid: string | null;
   mobile: string | null;
   user_type: "admin" | "boutique_owner" | "customer";
   status: "active" | "pending" | "restricted";
@@ -25,32 +26,32 @@ type Ctx = {
 
 const AuthCtx = createContext<Ctx | undefined>(undefined);
 
-export const API_BASE = "http://localhost:3000";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [apiBase, setApiBase] = useState(localStorage.getItem('api_base') || "http://localhost:3000");
+  const [apiBase, setApiBase] = useState(localStorage.getItem("api_base") || API_BASE);
 
   const switchApi = (url: string) => {
     setApiBase(url);
-    localStorage.setItem('api_base', url);
+    localStorage.setItem("api_base", url);
   };
 
   const loadProfile = async (token: string, currentApi: string) => {
     try {
       const res = await fetch(`${currentApi}/api/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
         setUser({ id: data.id });
       } else {
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
         setProfile(null);
         setUser(null);
       }
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       loadProfile(token, apiBase);
     } else {
@@ -80,12 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         apiBase,
         signOut: async () => {
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
           setProfile(null);
           setUser(null);
         },
         refreshProfile: async () => {
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           if (token) await loadProfile(token, apiBase);
         },
         // We'll add this to the context so it can be switched
@@ -93,13 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     >
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
         <div className="flex gap-2 rounded-full bg-background/80 p-1 backdrop-blur border border-border shadow-lg">
-          <button 
+          <button
             onClick={() => switchApi("http://localhost:8787")}
             className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${apiBase === "http://localhost:8787" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
           >
             Cloudflare
           </button>
-          <button 
+          <button
             onClick={() => switchApi("http://localhost:3000")}
             className={`px-3 py-1 text-[10px] font-bold rounded-full transition-colors ${apiBase === "http://localhost:3000" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
           >

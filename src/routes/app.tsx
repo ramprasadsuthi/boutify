@@ -10,7 +10,7 @@ export const Route = createFileRoute("/app")({
 function AppLayout() {
   const { user, loading, profile } = useAuth();
   const nav = useNavigate();
-  
+
   useEffect(() => {
     if (!loading && !user) nav({ to: "/login" });
   }, [user, loading, nav]);

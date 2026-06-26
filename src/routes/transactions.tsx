@@ -37,7 +37,7 @@ function TransactionsPage() {
     try {
       setLoading(true);
       const res = await fetch(`${apiBase}/api/admin/transactions`, {
-        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -61,7 +61,9 @@ function TransactionsPage() {
       <div className="space-y-6 p-6 md:p-10">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Credit History</h1>
-          <p className="mt-1 text-muted-foreground font-medium">View all wallet transactions and network credit distributions.</p>
+          <p className="mt-1 text-muted-foreground font-medium">
+            View all wallet transactions and network credit distributions.
+          </p>
         </div>
 
         {loading ? (
@@ -69,7 +71,7 @@ function TransactionsPage() {
             <div className="p-4 border-b border-border bg-muted/50">
               <Skeleton className="h-4 w-full" />
             </div>
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="p-4 border-b border-border last:border-0">
                 <Skeleton className="h-8 w-full" />
               </div>
@@ -98,19 +100,35 @@ function TransactionsPage() {
                       <div className="text-xs text-muted-foreground">{t.mobile}</div>
                     </td>
                     <td className="px-4 py-3 capitalize">
-                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
-                        t.transaction_type === "credit" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
-                      }`}>
-                        {t.transaction_type === "credit" ? <ArrowDownRight className="mr-1 h-3 w-3" /> : <ArrowUpRight className="mr-1 h-3 w-3" />}
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                          t.transaction_type === "credit"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-rose-100 text-rose-700"
+                        }`}
+                      >
+                        {t.transaction_type === "credit" ? (
+                          <ArrowDownRight className="mr-1 h-3 w-3" />
+                        ) : (
+                          <ArrowUpRight className="mr-1 h-3 w-3" />
+                        )}
                         {t.transaction_type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground max-w-xs truncate" title={t.description}>
+                    <td
+                      className="px-4 py-3 text-muted-foreground max-w-xs truncate"
+                      title={t.description}
+                    >
                       {t.description}
                     </td>
                     <td className="px-4 py-3 text-right font-semibold">
-                      <span className={t.transaction_type === "credit" ? "text-emerald-600" : "text-rose-600"}>
-                        {t.transaction_type === "credit" ? "+" : "-"}₹{parseFloat(t.amount).toFixed(2)}
+                      <span
+                        className={
+                          t.transaction_type === "credit" ? "text-emerald-600" : "text-rose-600"
+                        }
+                      >
+                        {t.transaction_type === "credit" ? "+" : "-"}₹
+                        {parseFloat(t.amount).toFixed(2)}
                       </span>
                     </td>
                   </tr>

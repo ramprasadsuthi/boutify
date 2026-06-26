@@ -49,18 +49,26 @@ function CustomersPage() {
                 <td className="px-4 py-3 font-medium">{c.full_name}</td>
                 <td className="px-4 py-3 text-muted-foreground">{c.mobile ?? "—"}</td>
                 <td className="px-4 py-3 capitalize">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    c.status === "active" ? "bg-emerald-100 text-emerald-700" :
-                    c.status === "pending" ? "bg-amber-100 text-amber-700" :
-                    "bg-rose-100 text-rose-700"
-                  }`}>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      c.status === "active"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : c.status === "pending"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
                     {c.status}
                   </span>
                 </td>
               </tr>
             ))}
             {!customers.length && !loading && (
-              <tr><td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">No customers found.</td></tr>
+              <tr>
+                <td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">
+                  No customers found.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

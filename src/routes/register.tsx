@@ -12,7 +12,7 @@ export const Route = createFileRoute("/register")({
   validateSearch: (search: Record<string, unknown>): { ref?: string } => {
     return {
       ref: search.ref as string | undefined,
-    }
+    };
   },
   component: Register,
 });
@@ -21,12 +21,12 @@ function Register() {
   const nav = useNavigate();
   const search = Route.useSearch();
   const { user, profile, loading, apiBase, signOut } = useAuth();
-  const [tab, setTab] = useState<"customer" | "boutique_owner" | "admin">("customer");
+  const [tab, setTab] = useState<"customer" | "admin">("customer");
   const [fullName, setFullName] = useState("");
+  const [userid, setUserID] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [referral, setReferral] = useState(search.ref ?? "");
-  const [boutiqueName, setBoutiqueName] = useState("");
   const [referrerName, setReferrerName] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -57,20 +57,21 @@ function Register() {
           </div>
           <h1 className="text-2xl font-bold">Already Logged In</h1>
           <p className="mt-4 text-muted-foreground">
-            You are currently signed in as <strong className="text-foreground">{profile.full_name}</strong>.
+            You are currently signed in as{" "}
+            <strong className="text-foreground">{profile.full_name}</strong>.
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             To register a new account, you must sign out first.
           </p>
           <div className="mt-8 space-y-3">
-            <Button 
+            <Button
               className="w-full bg-gradient-primary text-primary-foreground shadow-soft"
               onClick={() => nav({ to: "/app" })}
             >
               Go to Dashboard
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full border-border/50"
               onClick={async () => {
                 await signOut();
@@ -93,14 +94,14 @@ function Register() {
       const res = await fetch(`${apiBase}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          fullName, 
-          email, 
-          password, 
-          mobile, 
-          userType: tab, 
-          referralCodeInput: referral, 
-          boutiqueName 
+        body: JSON.stringify({
+          fullName,
+          email,
+          userid,
+          password,
+          mobile,
+          userType: tab,
+          referralCodeInput: referral,
         }),
       });
 
@@ -123,22 +124,25 @@ function Register() {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary shadow-soft">
             <Network className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold">Bouti<span className="text-gradient-primary">fy</span></span>
+          <span className="text-xl font-bold">
+            Bouti<span className="text-gradient-primary">fy</span>
+          </span>
         </Link>
         <div className="rounded-2xl border border-border bg-card p-8 shadow-elegant">
           <h1 className="text-2xl font-bold">Create your account</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {referrerName ? (
-              <span>You're joining <strong className="text-primary">{referrerName}</strong>'s network</span>
+              <span>
+                You're joining <strong className="text-primary">{referrerName}</strong>'s network
+              </span>
             ) : (
               "Start growing your network today"
             )}
           </p>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="mt-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="customer">Customer</TabsTrigger>
-              <TabsTrigger value="boutique_owner">Owner</TabsTrigger>
               <TabsTrigger value="admin">Admin</TabsTrigger>
             </TabsList>
             <TabsContent value={tab} className="mt-0" />
@@ -147,35 +151,73 @@ function Register() {
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fn">Full name</Label>
-              <Input id="fn" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <Input
+                id="fn"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
-            {tab === "boutique_owner" && (
-              <div className="space-y-2">
-                <Label htmlFor="bn">Boutique name</Label>
-                <Input id="bn" required value={boutiqueName} onChange={(e) => setBoutiqueName(e.target.value)} />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="un">
+                User ID <span className="text-muted-foreground">(unique)</span>
+              </Label>
+              <Input
+                id="un"
+                required
+                value={userid}
+                onChange={(e) => setUserID(e.target.value.toLowerCase().replace(/\s/g, ""))}
+                placeholder="e.g. johndoe123"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="mob">Mobile number</Label>
-              <Input id="mob" type="tel" required placeholder="e.g. 1234567890" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+              <Input
+                id="mob"
+                type="tel"
+                required
+                placeholder="e.g. 1234567890"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="pw">Password</Label>
-              <Input id="pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <Input
+                id="pw"
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             {tab === "customer" && (
               <div className="space-y-2">
-                <Label htmlFor="rf">Referral code <span className="text-muted-foreground">(optional)</span></Label>
-                <Input id="rf" value={referral} onChange={(e) => setReferral(e.target.value.toUpperCase())} placeholder="e.g. AB12CD34" />
+                <Label htmlFor="rf">
+                  Referral code <span className="text-muted-foreground">(optional)</span>
+                </Label>
+                <Input
+                  id="rf"
+                  value={referral}
+                  onChange={(e) => setReferral(e.target.value.toUpperCase())}
+                  placeholder="e.g. AB12CD34"
+                />
               </div>
             )}
-            <Button type="submit" disabled={busy} className="w-full bg-gradient-primary text-primary-foreground shadow-soft hover:shadow-elegant">
+            <Button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-gradient-primary text-primary-foreground shadow-soft hover:shadow-elegant"
+            >
               {busy ? "Creating…" : "Create account"}
             </Button>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:underline">Sign in</Link>
+            <Link to="/login" className="font-medium text-primary hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
